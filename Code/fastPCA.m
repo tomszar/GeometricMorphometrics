@@ -1,4 +1,4 @@
-function [V,S,scores,mean_eigenvals,index] = fastPCA(X, K, Panalysis)
+function [V,S,scores,eigenvals,percent,mean_eigenvals,index] = fastPCA(X, K, Panalysis)
 % Runs a fastPCA by using a randomized svd algorithm.
 % The X matrix is first centered and then a rsvd is applied
 % 
@@ -20,11 +20,16 @@ if ~exist('Panalysis', 'var')
   Panalysis = 0;
 endif
 
+%Getting n and center matrix
+n  = size(X)(1);
 mu = mean(X);
 Xm = bsxfun(@minus, X, mu);
-%C = cov(Xm);
+
+#Calculate svd from matrix, and generate PCA scores and eigenvals, and % explained
 [U, S, V] = rsvd(Xm, K); 
-scores = U*S;
+scores    = U*S;
+eigenvals = (diag(S).^2)/(n-1);
+percent   = var(scores)  / sum(var(Xm)) * 100;
 
 if (Panalysis == 1)
   [mean_eigenvals, index] = PA(Xm, K);
@@ -33,8 +38,8 @@ elseif (Panalysis == 0)
   index = NA;
 endif
 
-
 endfunction
+
 
 function [U,S,V] = rsvd(A,K)
 %-------------------------------------------------------------------------------------
@@ -84,17 +89,22 @@ function [mean_eigenvals, index] = PA(X, K, runs = 99)
 %   index: last PC to keep based on PA
 %
 
-[~, S, ~] = rsvd(X, K); 
-eigenvals = zeros([runs, K]);
-shuffledArray = X;
+n  = size(X)(1);
+[~, S] = rsvd(X, K);
+eigenvals_real = (diag(S).^2)/(n-1);
+eigenvals_rand = zeros([runs, K]);
+shuffledArray  = X;
+
 for i = 1:runs
   for dim = 1:size(X,2)
     shuffledArray(:, dim) = X(randperm(size(X,1)), dim);
   endfor
-  [~,S2] = fastPCA(shuffledArray, K);
-  eigenvals(i,:) = diag(S2);
+  [~, S] = rsvd(shuffledArray, K); 
+  eig    = (diag(S).^2)/(n-1);
+  eigenvals_rand(i,:) = eig;
 endfor
-mean_eigenvals = mean(eigenvals);
-index = find(diag(S)' > mean_eigenvals)(end);
+
+mean_eigenvals = mean(eigenvals_rand);
+index          = find(eigenvals_real' > mean_eigenvals);
   
 endfunction
