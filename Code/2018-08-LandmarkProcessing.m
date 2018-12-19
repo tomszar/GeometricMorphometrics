@@ -39,8 +39,8 @@ landmark_ids    = landmark_ids(keep,:);
 %Delete landmark_matrix
 clear landmark_matrix;
 
-%Run fastPCA on whole sample
-[V,S,score,eigenvals,percent,mean_eigenvals,index] = fastPCA(shape_matrix, 100, 1);
+%Run fastPCA on whole sample, with PA and 999 runs for PA
+[V,S,score,eigenvals,percent,cutoff_eigenvals,index] = fastPCA(shape_matrix, 100, 'PA', 999);
 
 %Looking at the number of relevant PCs
 plot(eigenvals,'bo-');
@@ -51,8 +51,8 @@ hold off;
 %Retain only relevant PCs from PA
 score     = score(:,index);
 V         = V(:,index);
-eigenvals = eigenvals(index,:);
-percent   = percent(:,index);
+%eigenvals = eigenvals(index,:);
+%percent   = percent(:,index);
 
 %Get the mean to export
 mu = mean(shape_matrix);
