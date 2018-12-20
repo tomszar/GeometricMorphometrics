@@ -1,4 +1,4 @@
-function [V,S,scores,eigenvals,percent,cutoff_eigenvals,index] = fastPCA(X, K, stop = 'NA', runs = 99)
+function [V,S,scores,eigenvals,percent,cutoff_eigenvals,index,mu,sd] = fastPCA(X, K, stop = 'NA', runs = 99)
 %{ 
   Runs a fastPCA by using a randomized svd algorithm.
   The X matrix is first centered and scaled, and then a rsvd is applied
@@ -24,27 +24,32 @@ function [V,S,scores,eigenvals,percent,cutoff_eigenvals,index] = fastPCA(X, K, s
                         determine the retention of PCs
    * index            : if Panalysis == 1, index is the index of the last eigenvalues 
                         that is higher than the average one taken from the PA analysis
+   * mu             : list of column means before centering
+   * sd             : list of column standard deviations before scaling
 %}
 
 %Getting n, and center and scale matrix
 n  = size(X)(1);
 mu = mean(X);
-sd = std(X);
 Xm = bsxfun(@minus, X, mu);
-Xm = bsxfun(@rdivide, Xm, sd);
+%sd = std(Xm);
+%Xm = bsxfun(@rdivide, Xm, sd);
+
+%Getting total variance of matrix
+total_var = sum(var(Xm));
 
 %Calculate rsvd from matrix, generate PCA scores, eigenvals, and % explained
 [U, S, V] = rsvd(Xm, K); 
 scores    = U*S;
 eigenvals = (diag(S).^2)/(n-1);
-percent   = var(scores)  / sum(var(Xm)) * 100;
+percent   = var(scores)  / total_var * 100;
 
 %Running stopping rule
-if (stop == 'PA')
+if strcmp(stop, 'PA')
   [cutoff_eigenvals, index] = PA(Xm, K, runs, type = 'prc');
-elseif (stop == 'avgPA')
+elseif strcmp(stop, 'avgPA')
   [cutoff_eigenvals, index] = PA(Xm, K, runs, type = 'avg');
-else
+elseif strcmp(stop, 'NA')
   cutoff_eigenvals = NA;
   index = NA;
 endif

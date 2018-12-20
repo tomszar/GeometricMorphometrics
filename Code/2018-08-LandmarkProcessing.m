@@ -39,14 +39,16 @@ landmark_ids    = landmark_ids(keep,:);
 %Delete landmark_matrix
 clear landmark_matrix;
 
-%Run fastPCA on whole sample, with PA and 999 runs for PA
-[V,S,score,eigenvals,percent,cutoff_eigenvals,index] = fastPCA(shape_matrix, 100, 'PA', 999);
+%Run fastPCA on whole sample
+[V,S,score,eigenvals,percent] = fastPCA(shape_matrix, 100);
 
-%Looking at the number of relevant PCs
-plot(eigenvals,'bo-');
-hold on;
-plot(mean_eigenvals,'ro-');
-hold off;
+%Retain PCs with eigenvalues higher than 1%
+index = find(percent > 1);
+
+%plot(eigenvals,'bo-');
+%hold on;
+%plot(mean_eigenvals,'ro-');
+%hold off;
 
 %Retain only relevant PCs from PA
 score     = score(:,index);
