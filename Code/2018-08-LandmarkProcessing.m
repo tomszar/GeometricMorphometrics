@@ -19,13 +19,20 @@ cd(folder.databases);
 load('landmark_matrix.mat');
 load('landmark_ids.mat');
 load('landmark_facets.mat');
+
+%Remove the string 'PSU' from the landmark_ids file, and remove the starting 0
+landmark_ids = erase(landmark_ids, 'PSU');
+landmark_ids = regexprep(landmark_ids,'^0*','');
+
+%Exporting total set of IDs
+cd(folder.save);
+cell2csv("total_faceshape_ids.txt", landmark_ids)
+
 %Loading common IDs from combination of datasets
+cd(folder.databases);
 geno_ids = textread ('common_ids.txt', '%s', 'delimiter' , ' ');
 
 %Retain IDs from genotype data into shape analysis
-%First, remove the string 'PSU' from the landmark_ids file, and remove the starting 0
-landmark_ids = erase(landmark_ids, 'PSU');
-landmark_ids = regexprep(landmark_ids,'^0*','');
 %Then, set the intersection
 [~ , keep] = intersect(landmark_ids, geno_ids);
 
