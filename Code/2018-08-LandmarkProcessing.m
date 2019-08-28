@@ -28,9 +28,9 @@ landmark_ids = regexprep(landmark_ids,'^0*','');
 cd(folder.save);
 cell2csv("total_faceshape_ids.txt", landmark_ids)
 
-%Loading common IDs from combination of datasets
+%Loading SNP IDs after combination of datasets
 cd(folder.databases);
-geno_ids = textread ('common_ids.txt', '%s', 'delimiter' , ' ');
+geno_ids = textread ('SNP_2729_ids.txt', '%s', 'delimiter' , ' ');
 
 %Retain IDs from genotype data into shape analysis
 %Then, set the intersection
@@ -42,6 +42,17 @@ landmark_ids    = landmark_ids(keep,:);
 
 %Run GPA
 [shape_matrix, cs] = GPA(landmark_matrix);
+
+%Read Covariates and generate the average male and female face from the shape_matrix
+[ID, sex, ~, ~, ~] = textread ('Covariates.csv', '%s %s %f %f %f', 'delimiter' , ',', 'headerlines', 1);
+[~ , keep] = intersect(ID,landmark_ids);
+
+sex = sex(keep,:);
+ID  = ID(keep,:);
+
+female_avg = mean(shape_matrix(strcmp(sex, 'Female'),:) );
+male_avg   = mean(shape_matrix(strcmp(sex, 'Male'),:) );
+total_sex_avg_shape = [female_avg; male_avg];
 
 %Delete landmark_matrix
 clear landmark_matrix;
@@ -69,6 +80,7 @@ mu = mean(shape_matrix);
 %Saving files
 cd(folder.save)
 cell2csv("landmark_ids.txt", landmark_ids)
+csvwrite("total_avg_sex_shape.txt", total_sex_avg_shape)
 csvwrite("means.txt", mu')
 csvwrite("cs.txt", cs') 
 csvwrite("scores.csv", score) 
