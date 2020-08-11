@@ -28,13 +28,16 @@ landmark_ids = regexprep(landmark_ids,'^0*','');
 cd(folder.save);
 cell2csv("total_faceshape_ids.txt", landmark_ids)
 
-%Loading SNP IDs after combination of datasets
-cd(folder.databases);
-geno_ids = textread ('SNP_2729_ids.txt', '%s', 'delimiter' , ' ');
+%Loading new annonymized IDs, rename landmark_ids with new names for further export
+cd(folder.databases)
+[old_ids, landmark_ids] = textread ('AnonymizedIDs.csv', '%s %s', 'delimiter' , ',');
+
+%Loading SNP IDs after combination of datasets. The annonymized IDs are already there
+[geno_ids, new_geno_ids] = textread ('SNP_2729_ids.txt', '%s %s', 'delimiter' , ',');
 
 %Retain IDs from genotype data into shape analysis
 %Then, set the intersection
-[~ , keep] = intersect(landmark_ids, geno_ids);
+[~, keep] = intersect(landmark_ids, new_geno_ids);
 
 %Keep those only in the landmark_matrix
 landmark_matrix = landmark_matrix(keep,:);
